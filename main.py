@@ -82,3 +82,45 @@ for column in numeric_cols:
     plt.title(f'Distribution de {column} (après Z-Score)')
     plt.savefig(os.path.join(output_dir_after, f'{column}_standardise.png'))
     plt.close()
+
+
+# ==================================================
+# ÉTAPE 4: ANALYSE DE CORRÉLATION
+# ==================================================
+
+if target_col in diabetes.columns:
+    # Calcul de la corrélation
+    correlations = diabetes.corr()[target_col].sort_values(ascending=False)
+    
+    # Affichage console
+    print("\n" + "="*50)
+    print("TOP 10 DES VARIABLES LIÉES POSITIVEMENT :")
+    print(correlations.head(11)) 
+
+    # --- NOUVEAU : Sauvegarde des corrélations textuelles ---
+    with open(os.path.join(output_dir_after, 'top_correlations.txt'), 'w') as f:
+        f.write("TOP 10 DES VARIABLES LIÉES POSITIVEMENT AU DIABÈTE :\n")
+        f.write(correlations.head(11).to_string())
+        f.write("\n\nTOP 5 DES VARIABLES LIÉES NÉGATIVEMENT :\n")
+        f.write(correlations.tail(5).to_string())
+
+    # --- Génération de la Heatmap ---
+    plt.figure(figsize=(20, 15))
+    
+    # Masque pour masquer la partie redondante (triangle supérieur)
+    mask = np.triu(np.ones_like(diabetes.corr(), dtype=bool))
+    
+    sns.heatmap(diabetes.corr(), 
+                mask=mask, 
+                cmap='coolwarm', 
+                center=0, 
+                linewidths=0.1,
+                annot=False) # Désactivé pour la clarté sur 35 colonnes
+    
+    plt.title(f'Matrice de Corrélation Finale', fontsize=16)
+    
+    # Sauvegarde sous le nom demandé
+    plt.savefig(os.path.join("./", 'correlation_matrix.png'), dpi=300, bbox_inches='tight')
+
+
+print(f"\n[OK] Matrice de corrélation enregistrée sous : correlation_matrix.png")
